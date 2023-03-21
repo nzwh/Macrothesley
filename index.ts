@@ -39,7 +39,7 @@
                     });
                     
                 }).catch(console.error).finally(() => {
-                    message.channel.send({content: msgs || "No results found."});
+                    message.reply({content: `\`\`\`fix\n${msgs}\`\`\`` || "No results found."});
                 });
             }, 1000);
         }
@@ -54,6 +54,46 @@
             || client.commands.get(client.aliases.get(args[0].toLowerCase()));
         if (cmd) cmd.default.run(client, message, args.slice(1));
         
+    });
+
+    let holder: string[] = [];
+    client.on('messageUpdate', async (old_message, new_message) => {
+
+        if (!new_message.channel.messages.cache.last(3)
+            .some(msg => msg.content.toLowerCase().includes("!inv") && (msg.content.toLowerCase().includes("collect=y") || msg.content.toLowerCase().includes("push=y"))))
+            return;
+
+        let nm = new_message.content || "";
+        if (nm.toLowerCase().includes("push=y")) {
+            
+            let tt = '';
+            for (let i = 0; i < holder.length; i++) {
+                tt += holder[i] + " ";
+                if (i % 24 === 0 && i != 0) tt += '\n';
+            }
+
+            const fs = require('fs');
+            fs.writeFile('output.txt', tt, (err: any) => {
+                if (err) throw err;
+                new_message.channel.send({files: ['output.txt']});
+            });
+
+            holder = [];
+
+        } else {
+            
+            old_message.embeds[0].fields.forEach(field => {
+                holder.push(field.value.split('\n')[0]);
+            });
+            new_message.embeds[0].fields.forEach(field => {
+                holder.push(field.value.split('\n')[0]);
+            });
+            
+            let unique = [...new Set(holder)];
+            holder = unique;
+            console.log(holder);
+        }
+
     });
 
     client.login(process.env.TOKEN); 
