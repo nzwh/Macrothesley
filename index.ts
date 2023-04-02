@@ -67,9 +67,9 @@
         if (nm.toLowerCase().includes("push=y")) {
             
             let tt = '';
-            for (let i = 0; i < holder.length; i++) {
-                tt += holder[i] + " ";
-                if (i % 24 === 0 && i != 0) tt += '\n';
+            for (let i = 1; i <= holder.length; i++) {
+                tt += holder[i-1] + " ";
+                if (i % 25 === 0 && i !== 0) tt += '\n\n';
             }
 
             const fs = require('fs');
