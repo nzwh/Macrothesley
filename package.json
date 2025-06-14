@@ -1,6 +1,6 @@
 {
-  "name": "hephaestus",
-  "version": "1.0.0",
+  "name": "macrothesley",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nzwh/Hephaestus.git"
+    "url": "git+https://github.com/nzwh/Macrothesley.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nzwh/Hephaestus/issues"
+    "url": "https://github.com/nzwh/Macrothesley/issues"
   },
-  "homepage": "https://github.com/nzwh/Hephaestus#readme",
+  "homepage": "https://github.com/nzwh/Macrothesley#readme",
   "dependencies": {
     "discord.js": "^13.8.0",
     "dotenv": "^16.0.3",
