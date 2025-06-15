@@ -17,13 +17,14 @@ export default {
 
         // Initialize the card collection and bot ID
         const BOT_ID = '730104910502297670'
+        const channel = message.channel as Discord.TextChannel;
         let CardCollection: CardMetadata[] = [];
 
         // Filter for the bot's response with an embed
         const initialFilter = (m: Message) =>
             m.author.id === BOT_ID &&
             m.embeds.length > 0 
-        const embedMessage = await message.channel.awaitMessages({
+        const embedMessage = await channel.awaitMessages({
             filter: initialFilter, max: 1, time: 10000,
         });
         // Set the first message as the base message
@@ -35,7 +36,7 @@ export default {
                 embeds: [{
                     author: {
                         name: `${message.author.username} — Inventory Scraper`,
-                        iconURL: message.author.displayAvatarURL({ dynamic: true }),
+                        icon_url: message.author.displayAvatarURL(),
                     },
                     title: `\`🌀\` — No cards found in your inventory.`
                 }], 

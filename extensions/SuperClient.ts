@@ -1,4 +1,4 @@
-import { Client, Intents, Collection } from 'discord.js';
+import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 
 class SuperClient extends Client {
 
@@ -8,11 +8,17 @@ class SuperClient extends Client {
 
     constructor(){
         super({ intents: [
-                Intents.FLAGS.GUILDS,
-                Intents.FLAGS.GUILD_MEMBERS,
-                Intents.FLAGS.GUILD_MESSAGES,
-                Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-                Intents.FLAGS.GUILD_VOICE_STATES
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildMembers,
+                GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.MessageContent,
+                GatewayIntentBits.GuildMessageReactions,
+                GatewayIntentBits.GuildVoiceStates
+        ], partials: [
+                Partials.Channel,
+                Partials.Message,
+                Partials.Reaction,
+                Partials.User
         ]});
         this.commands = new Collection();
         this.aliases = new Collection();

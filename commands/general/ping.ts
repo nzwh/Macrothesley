@@ -4,9 +4,9 @@ import SuperClient from '../../extensions/SuperClient';
 export default {
     run: async (client : SuperClient, message: Message, args: any[]) => {
 
-        const pn_embed = new Discord.MessageEmbed()
+        const pn_embed = new Discord.EmbedBuilder()
             .setDescription('\`🎮 Pinging...\`')
-            .setColor(message.guild!.me!.displayHexColor);
+            .setColor(parseInt(message.guild!.members.me!.displayHexColor.replace('#', ''), 16));
 
         const msg = await message.reply({ allowedMentions: { repliedUser: false }, 
             embeds: [pn_embed] });

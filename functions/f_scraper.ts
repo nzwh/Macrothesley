@@ -9,7 +9,7 @@ function getMatchAndDiscrepancy (message: Message, length: number) {
     return { match, discrepancy };
 }
 
-function handleCardExtraction (embed: Discord.MessageEmbed): CardMetadata[] {
+function handleCardExtraction (embed: Discord.Embed): CardMetadata[] {
     const map = new Map<string, CardMetadata>();
     for (const field of embed.fields) {
         const code = field.value.split('\n')[0];
@@ -68,31 +68,31 @@ function onFetchEmbed (message: Message, length: number) {
     return {
         author: {
             name: `${message.author.username} — Inventory Scraper`,
-            iconURL: message.author.displayAvatarURL({ dynamic: true }),
+            iconURL: message.author.displayAvatarURL(),
         },
         title: `\`🌀\` — Scraping (**${length}**/?) cards...`,
         description: 
             '-# Tip: Cycle through your entire inventory to get all the cards.\n' +
             '-# You can stop this by editing the command to add `push=y`.',
         footer: { text: `Macrothesley` },
-        timestamp: new Date(),
-        color: message.guild!.me!.displayHexColor
+        timestamp: new Date().toISOString(),
+        color: parseInt(message.guild!.members.me!.displayHexColor.replace('#', ''), 16)
     };
 }
 function onCompleteEmbed (message: Message, cards: CardMetadata[], args?: any[]) {
     return {
         author: {
             name: `${message.author.username} — Inventory Scraper`,
-            iconURL: message.author.displayAvatarURL({ dynamic: true }),
+            iconURL: message.author.displayAvatarURL(),
         },
         title: `\`🌀\` — Succesfully scraped **${cards.length}** cards.`,
         description: ('```' + handleFormatting(cards, args) + '```'),
         footer: { 
             text: `Macrothesley`, 
-            iconURL: message.client.user!.displayAvatarURL({ dynamic: true }) 
+            iconURL: message.client.user!.displayAvatarURL() 
         },
-        timestamp: new Date(),
-        color: message.guild!.me!.displayHexColor
+        timestamp: new Date().toISOString(),
+        color: parseInt(message.guild!.members.me!.displayHexColor.replace('#', ''), 16)
     }
 }
 
@@ -104,7 +104,7 @@ function handleCompleteEmbed(message: Message, cards: CardMetadata[], args?: any
 
     const content = embed.description.slice(3, -3).replace(/``````/g, '\n\n');
     const buffer = Buffer.from(content, 'utf-8');
-    const file = new Discord.MessageAttachment(buffer, 'cards.txt');
+    const file = new Discord.AttachmentBuilder(buffer, { name: 'cards.txt' });
 
     embed.description = '';
     return { embed, file };

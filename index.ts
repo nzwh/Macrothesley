@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import Discord, { ActivityType } from 'discord.js';
 import SuperClient from './extensions/SuperClient';
 import CommandHandler from './extensions/CommandHandler';
 
@@ -13,7 +13,7 @@ client.once('ready', () => {
     console.log('\n  ❱❱ Online. \n');
     client.user?.setPresence({ activities: [{
         name: 'Meropide+',
-        type: 'COMPETING',
+        type: ActivityType.Competing,
         url: 'https://meropide.com'
     }], status: 'dnd' });
 });
@@ -48,7 +48,6 @@ client.on('messageCreate', async (message) => {
                 || client.commands.get(client.aliases.get(key.toLowerCase()));
             if (cmd) await cmd.default.run(client, message, queries);            
         }
-
         return;
     }
 
