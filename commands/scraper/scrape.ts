@@ -1,97 +1,16 @@
 import Discord, { Message } from 'discord.js';
 import SuperClient from '../../extensions/SuperClient';
 
-// // TODO: Transfer to helper file
-// const parsePricing = (content: string): Record<string, number> => {
-//     let entries = content.split(', ').map(price => {
-//         const [group, value] = price.split('=');
-//         if (!group || !value) return null;
-//         return [group.trim(), Number(value)];
-//         })
-//         .filter((entry): entry is [string, number] => entry !== null); // type guard
-//     return Object.fromEntries(entries);
-// };
+type CardMetadata = { card: string, code: string };
 
-// type GroupCode = [string, string];
-// let GroupCodeHolder: GroupCode[] = [];
-// let prices: Record<string, number> = {};
-// let defaultPrice: number = 0;
+function getMatchAndDiscrepancy (message: Message, length: number) {
+    const match = message.embeds[0]?.footer?.text?.match(/^Page (\d+) of (\d+)/i);
+    const discrepancy = length === 
+        Number(message.embeds[0].description?.split('has ')[1].split(' cards')[0]);
+    return { match, discrepancy };
+}
 
-// client.on('messageUpdate', async (old_message, new_message) => {
-
-//     if (!new_message.channel.messages.cache.last(3)
-//         .some(msg => msg.content.toLowerCase().includes("!inv") && (msg.content.toLowerCase().includes("collect=y") || msg.content.toLowerCase().includes("push=y"))))
-//         return;
-
-//     let nm = new_message.content || "";
-//     if (nm.toLowerCase().includes("push=y")) {
-
-//         if (prices && Object.keys(prices).length > 0) {
-//             const sortedPrices = Object.entries(prices)
-//             .sort((a, b) => b[1] - a[1]);
-//             prices = Object.fromEntries(sortedPrices);
-
-//             let tt = '';
-//             GroupCodeHolder.map((tuple, index) => {
-//                 const price = Object.keys(prices)
-//                     .find(key => tuple[0].includes(key));
-
-//                 const value = price ? prices[price] : defaultPrice;
-//                 tt += `!sell ${tuple[1]} ${value}\n`;
-//                 if (index % 25 === 0 && index !== 0)
-//                     tt += '\n';
-//                 if (index === GroupCodeHolder.length - 1)
-//                     tt += `\n\nTotal: ${GroupCodeHolder.length} cards\n`;
-//             });
-
-//             const fs = require('fs');
-//             fs.writeFile('output.txt', tt, (err: any) => {
-//                 if (err) throw err;
-//                 new_message.channel.send({files: ['output.txt']});
-//             });
-            
-//         } else {
-        
-//             let tt = '';
-//             GroupCodeHolder.map((tuple, index) => {
-//                 tt += `${tuple[0]}: ${tuple[1]}\n`
-//                 if (index % 25 === 0 && index !== 0)
-//                     tt += '\n';
-//                 if (index === GroupCodeHolder.length - 1)
-//                     tt += `\n\nTotal: ${GroupCodeHolder.length} cards\n`;
-//             });
-
-//             const fs = require('fs');
-//             fs.writeFile('output.txt', tt, (err: any) => {
-//                 if (err) throw err;
-//                 new_message.channel.send({files: ['output.txt']});
-//             });
-//         }
-
-//         GroupCodeHolder = [];
-
-//     } else {
-        
-//         old_message.embeds[0].fields.forEach(field => {
-//             let toPush = [field.name, field.value.split('\n')[0]];
-//             if (!GroupCodeHolder.some(tuple => tuple[1].includes(toPush[1]))) {
-//                 GroupCodeHolder.push([toPush[0].toLowerCase(), toPush[1]]);
-//             }
-//         });
-//         new_message.embeds[0].fields.forEach(field => {
-//             let toPush = [field.name, field.value.split('\n')[0]];
-//             if (!GroupCodeHolder.some(tuple => tuple[1].includes(toPush[1]))) {
-//                 GroupCodeHolder.push([toPush[0].toLowerCase(), toPush[1]]);
-//             }
-//         });
-        
-//         console.log("Logging:", GroupCodeHolder);
-//     }
-
-// });
-
-type CardMetadata = {card: string, code: string};
-function getCardsFromEmbed (embed: Discord.MessageEmbed): CardMetadata[] {
+function handleCardExtraction (embed: Discord.MessageEmbed): CardMetadata[] {
     const map = new Map<string, CardMetadata>();
     for (const field of embed.fields) {
         const code = field.value.split('\n')[0];
@@ -99,14 +18,50 @@ function getCardsFromEmbed (embed: Discord.MessageEmbed): CardMetadata[] {
     }
     return [...map.values()];
 }
-
-function removeDuplicates (cards: CardMetadata[]): CardMetadata[] {
+function handleCardDeduplication (cards: CardMetadata[]): CardMetadata[] {
     const seen = new Set<string>();
     return cards.filter(card => {
         if (seen.has(card.code)) return false;
         seen.add(card.code);
         return true;
     });
+}
+
+function handleFormatting (cards: CardMetadata[], args?: any[]): string {
+    // If the command has arguments, loop through them
+    if (args && args.length > 0 && args.some(arg => arg.key === 'pricing')) {
+        // If the pricing argument is provided, parse it
+        let pricingArg = args.find(arg => arg.key === 'pricing')?.value.slice(1, -1);
+        let priceList = handlePricing(pricingArg);
+
+        // If the pricing argument is provided, format the cards with their prices
+        return cards.map(card => {
+            const price = priceList[Object.keys(priceList)
+                .find(key => card.card.toLowerCase().includes(key)) || 'default' || 0]
+            return `!sell ${card.code} ${price}`;
+        }).join('\n');
+    }
+
+    // If no arguments are provided, return the cards normally
+    return cards
+        .map(card => card.code)
+        .reduce((acc, code, i) => {
+            const chunkIndex = Math.floor(i / 25);
+            acc[chunkIndex] = (acc[chunkIndex] || []).concat(code);
+            return acc;
+        }, [] as string[][])
+        .map(chunk => chunk.join(' '))
+        .join('``````');
+}
+function handlePricing (content: string): Record<string, number> {
+    return Object.fromEntries(
+        content.split(',')
+        .map(part => {
+            const [group, value] = part.split('=').map(s => s.trim());
+            return group && !isNaN(Number(value)) ? [group, Number(value)] : null;
+        })
+        .filter((entry): entry is [string, number] => entry !== null)
+    );
 }
 
 function onFetchEmbed (message: Message, length: number) {
@@ -124,22 +79,14 @@ function onFetchEmbed (message: Message, length: number) {
         color: message.guild!.me!.displayHexColor
     };
 }
-function onCompleteEmbed (message: Message, cards: CardMetadata[]) {
+function onCompleteEmbed (message: Message, cards: CardMetadata[], args?: any[]) {
     return {
         author: {
             name: `${message.author.username} — Inventory Scraper`,
             iconURL: message.author.displayAvatarURL({ dynamic: true }),
         },
         title: `\`🌀\` — Succesfully scraped **${cards.length}** cards.`,
-        description: ('```' + cards
-            .map(card => card.code)
-            .reduce((acc, code, i) => {
-                const chunkIndex = Math.floor(i / 25);
-                acc[chunkIndex] = (acc[chunkIndex] || []).concat(code);
-                return acc;
-            }, [] as string[][])
-            .map(chunk => chunk.join(' '))
-            .join('``````') + '```'),
+        description: ('```' + handleFormatting(cards, args) + '```'),
         footer: { 
             text: `Macrothesley`, 
             iconURL: message.client.user!.displayAvatarURL({ dynamic: true }) 
@@ -163,7 +110,7 @@ export default {
                 typeof m.embeds[0].description === "string" &&
                 m.embeds[0].description.includes(message.author.id);
         const embedMessage = await message.channel.awaitMessages({
-            filter: initialFilter, max: 1, time: 3000,
+            filter: initialFilter, max: 1, time: 10000,
         });
         // Set the first message as the base message
         const baseMessage = embedMessage.first();
@@ -182,7 +129,7 @@ export default {
             });
         // Extract cards from the initial embed
         if (baseMessage.embeds[0])
-            CardCollection.push(...getCardsFromEmbed(baseMessage.embeds[0]));
+            CardCollection.push(...handleCardExtraction(baseMessage.embeds[0]));
 
         // Filter for updates to the bot's response
         const filter = (m: Message) => 
@@ -199,7 +146,7 @@ export default {
             if (newMsg.content.toLowerCase().includes('push=y')) {
                 // If it is the last page, stop listening for updates
                 transparency.edit({
-                    embeds: [onCompleteEmbed(message, CardCollection)],
+                    embeds: [onCompleteEmbed(message, CardCollection, args)],
                     allowedMentions: { repliedUser: false }
                 });
                 // Clear everything
@@ -213,31 +160,52 @@ export default {
             if (newMsg.embeds.length <= 0) return;
 
             // Update the card collection with new cards, and update the message
-            CardCollection = removeDuplicates([
-                ...CardCollection, ...getCardsFromEmbed(newMsg.embeds[0])]);
+            CardCollection = handleCardDeduplication([
+                ...CardCollection, ...handleCardExtraction(newMsg.embeds[0])]);
             transparency.edit({
                 embeds: [onFetchEmbed(message, CardCollection.length)],
                 allowedMentions: { repliedUser: false }
             });
             
+            // Check for length and discrepancies in the new embed
+            const { match, discrepancy } = getMatchAndDiscrepancy(newMsg, CardCollection.length);
             // If the embed indicates the last page, check if it's the last page
-            const match = newMsg.embeds[0]?.footer?.text?.match(/^Page (\d+) of (\d+)/i);
-            if (match && match[1] === match[2]) {
+            if (discrepancy || (match && match[1] === match[2] && discrepancy)) {
+                const finalEmbed = onCompleteEmbed(message, CardCollection, args);
+                let file = null;
+
+                // If the description is too long, send it as a file
+                if (finalEmbed.description.length > 4000) {
+                    file = new Discord.MessageAttachment(
+                        Buffer.from(finalEmbed.description.slice(3, -3).replace('``````', '\n\n'), 
+                            'utf-8'), 'cards.txt'
+                    );
+                    finalEmbed.description = '';
+                }
                 // If it is the last page, stop listening for updates
                 transparency.edit({
-                    embeds: [onCompleteEmbed(message, CardCollection)],
-                    allowedMentions: { repliedUser: false }
+                    embeds: [finalEmbed],
+                    allowedMentions: { repliedUser: false },
+                    ...(file && { files: [file] })
                 });
                 // Clear everything
                 CardCollection = [];
             }
         });
 
+        // Check for length and discrepancies in the initial embed
+        const { match, discrepancy } = getMatchAndDiscrepancy(baseMessage, CardCollection.length);
         // Send the initial message to indicate processing
         const transparency = await message.reply({
-            embeds: [onFetchEmbed(message, CardCollection.length)],
+            embeds: [(discrepancy || (match && match[1] === match[2] && discrepancy)) ?
+                onCompleteEmbed(message, CardCollection) : 
+                onFetchEmbed(message, CardCollection.length)],
             allowedMentions: { repliedUser: false }
         });
+        // If the embed indicates the last page, clear the card collection
+        if ((discrepancy || match && match[1] === match[2] && discrepancy))
+            CardCollection = [];
+    
     },
 
     name:  __filename.substring(__dirname.length + 1).split(".")[0],

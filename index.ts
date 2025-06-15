@@ -39,8 +39,8 @@ client.on('messageCreate', async (message) => {
     if (ScrapeCommands.has(ScrapeQuery[0]) && ScrapeQuery.length > 2) {
 
         // Extract the queries and map them to key-value pairs
-        const matches = [...ScrapeQuery[1].matchAll(/(\w+)=((?:(?!\s+\w+=).)+)/g)]
-        const queries = matches.map(m => ({ key: m[1], value: m[2].trim() }))
+        const matches = [...ScrapeQuery[1].matchAll(/(\w+)=((\[[^\]]*\])|([^\s]+))/g)];
+        const queries = matches.map(m => ({ key: m[1], value: m[2].trim() }));
 
         // Execute the command if it exists
         for (const { key } of queries) {
