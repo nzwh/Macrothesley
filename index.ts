@@ -1,99 +1,70 @@
+import Discord from 'discord.js';
+import SuperClient from './extensions/SuperClient';
+import CommandHandler from './extensions/CommandHandler';
 
-    import Discord from 'discord.js';
-    import SuperClient from './extensions/super_client';
+// Initializing dotenv, prefix configuration
+require('dotenv').config();
+const prefix = process.env.PREFIX || '-';
+console.log('\n');
 
-    require('dotenv').config();
-    const Prefix = process.env.PREFIX || '-';
-    console.log('\n');
+// Initializing and configuring the client
+const client = new SuperClient();
+client.once('ready', () => {
+    console.log('\n  ❱❱ Online. \n');
+    client.user?.setPresence({ activities: [{
+        name: 'Meropide+',
+        type: 'COMPETING',
+        url: 'https://meropide.com'
+    }], status: 'dnd' });
+});
 
-    const client = new SuperClient();
-    client.once('ready', () => {
+// Setting up collections and handling commands
+client.categories = [];
+client.commands = new Discord.Collection();
+client.aliases = new Discord.Collection();
+CommandHandler(client);
 
-        console.log('\n  ❱❱ Online. \n');
-        client.user?.setPresence({ activities: [{
-            name: 'commands',
-            type: 'WATCHING',
-        }], status: 'dnd' });
-    });
+// Handling message creation
+client.on('messageCreate', async (message) => {
 
-    client.commands = new Discord.Collection();
-    client.aliases = new Discord.Collection();
-    client.categories = [];
-
-    import Handler from './extensions/command_handler';
-    Handler(client);
-
-    client.on('messageCreate', async (message) => {
-
-        if (message.content.includes("!inv") && message.content.includes("grab=y")) {
+    //-- Prefix reminder handling
+    if ((message.content.split(' '))[0] === `<@${client.user?.id}>`) 
+        message.channel.send(`> Hello, my prefix is \`"${prefix}"\`.`);
     
-            let msgs = "";
-            setTimeout(() => {
-                message.channel.messages.fetch({ limit: 3 }).then(messages => {
+    //-- Scrape command handling
+    const ScrapeCommands = new Set(["!inv", "!inventory", "!mp", "!marketplace"]);
+    const ScrapeQuery = message.content.toLowerCase().split(/ (.+)/);
 
-                    const lastMessage = messages.find(msg => msg.author.id === "730104910502297670");
-                    if (!lastMessage) return message.channel.send({content: "No results found."});
+    // Execute the command if its a scrape command
+    if (ScrapeCommands.has(ScrapeQuery[0]) && ScrapeQuery.length > 2) {
 
-                    lastMessage.embeds[0].fields.forEach(field => {
-                        msgs += field.value.split('\n')[0] + " ";
-                    });
-                    
-                }).catch(console.error).finally(() => {
-                    message.reply({content: `\`\`\`fix\n${msgs}\`\`\`` || "No results found."});
-                });
-            }, 1000);
-        }
-        
-        if ((message.content.split(' '))[0] === `<@${client.user?.id}>`) 
-            message.channel.send(`> Hello, my prefix is \`"${Prefix}"\`.`);
-        if (message.author.bot || !message.guild || !message.content.startsWith(Prefix)) 
-            return;
-        
-        const args = message.content.substring(Prefix.length).split(" ");
-        const cmd = client.commands.get(args[0].toLowerCase()) 
-            || client.commands.get(client.aliases.get(args[0].toLowerCase()));
-        if (cmd) cmd.default.run(client, message, args.slice(1));
-        
-    });
+        // Extract the queries and map them to key-value pairs
+        const matches = [...ScrapeQuery[1].matchAll(/(\w+)=((?:(?!\s+\w+=).)+)/g)]
+        const queries = matches.map(m => ({ key: m[1], value: m[2].trim() }))
 
-    let holder: string[] = [];
-    client.on('messageUpdate', async (old_message, new_message) => {
-
-        if (!new_message.channel.messages.cache.last(3)
-            .some(msg => msg.content.toLowerCase().includes("!inv") && (msg.content.toLowerCase().includes("collect=y") || msg.content.toLowerCase().includes("push=y"))))
-            return;
-
-        let nm = new_message.content || "";
-        if (nm.toLowerCase().includes("push=y")) {
-            
-            let tt = '';
-            for (let i = 1; i <= holder.length; i++) {
-                tt += holder[i-1] + " ";
-                if (i % 25 === 0 && i !== 0) tt += '\n\n';
-            }
-
-            const fs = require('fs');
-            fs.writeFile('output.txt', tt, (err: any) => {
-                if (err) throw err;
-                new_message.channel.send({files: ['output.txt']});
-            });
-
-            holder = [];
-
-        } else {
-            
-            old_message.embeds[0].fields.forEach(field => {
-                holder.push(field.value.split('\n')[0]);
-            });
-            new_message.embeds[0].fields.forEach(field => {
-                holder.push(field.value.split('\n')[0]);
-            });
-            
-            let unique = [...new Set(holder)];
-            holder = unique;
-            console.log(holder);
+        // Execute the command if it exists
+        for (const { key } of queries) {
+            const cmd = client.commands.get(key.toLowerCase())
+                || client.commands.get(client.aliases.get(key.toLowerCase()));
+            if (cmd) await cmd.default.run(client, message, queries);            
         }
 
-    });
+        return;
+    }
 
-    client.login(process.env.TOKEN); 
+    //-- Regular command handling
+    // If the message is from a bot, not in a guild, or does not start with the prefix, ignore it
+    if (message.author.bot || !message.guild || !message.content.startsWith(prefix)) 
+        return;
+
+    // If the message does not start with the prefix, ignore it
+    const args = message.content.substring(prefix.length).split(" ");
+    // Execute the command if it exists
+    const cmd = client.commands.get(args[0].toLowerCase()) 
+        || client.commands.get(client.aliases.get(args[0].toLowerCase()));
+    if (cmd) return cmd.default.run(client, message, args.slice(1));
+    
+});
+
+// Handling log-in
+client.login(process.env.TOKEN); 
