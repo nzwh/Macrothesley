@@ -1,14 +1,34 @@
-import Discord, { Message } from 'discord.js';
+import Discord, { Message, Embed, EmbedBuilder, MessagePayload, MessageReplyOptions } from 'discord.js';
 import { CardMetadata } from '../types/GlobalTypes';
 
-function getMatchAndDiscrepancy (message: Message, length: number) {
+//-- (->boolean) Checks if the current page is the last page
+function isPageEnd(message: Message): boolean {
     const match = message.embeds[0]?.footer?.text?.match(/^Page (\d+) of (\d+)/i);
-    const discrepancy = length === 
-        Number(message.embeds[0].description?.split('has ')[1].split(' cards')[0]);
-    return { match, discrepancy };
+    return match ? match[1] === match[2] : false;
+}
+//-- (->boolean) Checks if the total card count matches the expected count
+function isCountEqual (message: Message, length: number): boolean {
+    return (length === Number(message.embeds[0].description?.match(/has (\d+) cards/)?.[1] || 0));
 }
 
-function handleCardExtraction (embed: Discord.Embed): CardMetadata[] {
+
+
+//-- (->CardMetadata[]) Returns and removes duplicates from an array of cards
+function getUniqueCards (cards: CardMetadata[]): CardMetadata[] {
+
+    const seen = new Set<string>();
+    const result = cards.filter(card => {
+        if (seen.has(card.code)) return false;
+        seen.add(card.code);
+        return true;
+    });
+
+    return result;
+}
+
+//-- (->CardMetdata[]) Returns and formats cards from a given embed
+function getCards (embed: Embed): CardMetadata[] {
+
     const map = new Map<string, CardMetadata>();
     for (const field of embed.fields) {
         const code = field.value.split('\n')[0];
@@ -16,31 +36,9 @@ function handleCardExtraction (embed: Discord.Embed): CardMetadata[] {
     }
     return [...map.values()];
 }
-function handleCardDeduplication (cards: CardMetadata[]): CardMetadata[] {
-    const seen = new Set<string>();
-    return cards.filter(card => {
-        if (seen.has(card.code)) return false;
-        seen.add(card.code);
-        return true;
-    });
-}
+//-- (->string) Returns a formatted string with the default settings
+function setCards (cards: CardMetadata[], chunkSize: number): string {
 
-function handleFormatting (cards: CardMetadata[], args?: any[]): string {
-    // If the command has arguments, loop through them
-    if (args && args.length > 0 && args.some(arg => arg.key === 'pricing')) {
-        // If the pricing argument is provided, parse it
-        let pricingArg = args.find(arg => arg.key === 'pricing')?.value.slice(1, -1);
-        let priceList = handlePricing(pricingArg);
-
-        // If the pricing argument is provided, format the cards with their prices
-        return cards.map(card => {
-            const price = priceList[Object.keys(priceList)
-                .find(key => card.card.toLowerCase().includes(key)) || 'default' || 0]
-            return `!sell ${card.code} ${price}`;
-        }).join('\n');
-    }
-
-    // If no arguments are provided, return the cards normally
     return cards
         .map(card => card.code)
         .reduce((acc, code, i) => {
@@ -51,73 +49,136 @@ function handleFormatting (cards: CardMetadata[], args?: any[]): string {
         .map(chunk => chunk.join(' '))
         .join('``````');
 }
-function handlePricing (content: string): Record<string, number> {
-    return Object.fromEntries(
-        content.split(',')
+
+//-- (->Record<string, number>) Extracts the pricing information from a string
+function getPricing (query: string): Record<string, number> {
+
+    const pricing = query
+        .slice(1, -1)
+        .split(',')
         .sort((a, b) => b.localeCompare(a))
         .map(part => {
             const [group, value] = part.split('=').map(s => s.trim());
             return group && !isNaN(Number(value)) ? [group, Number(value)] : null;
         })
         .filter((entry): entry is [string, number] => entry !== null)
-    );
+    return Object.fromEntries(pricing);
+}
+//-- (->string) Returns a formatted string based on pricing if it is set
+function setPricing (cards: CardMetadata[], pricing: Record<string, number>): string {
+
+    return cards
+        .map(card => {
+            const key = Object.keys(pricing)
+                .find(k => card.card.toLowerCase().includes(k)) || 'default';
+            return `!sell ${card.code} ${pricing[key] ?? 0}`;
+        }, [])
+        .join('\n');
 }
 
-function onFetchEmbed (message: Message, length: number) {
-    return {
-        author: {
-            name: `${message.author.username} — Inventory Scraper`,
+// TODO: (->string[]) Returns a list of events based on a query
+function getEvents (query: string): string[] {
+    return [];
+}
+// TODO: (->string) Returns a formatted string based on events if it is set
+function setEvents (cards: CardMetadata[], events: string[]): string {
+    return "";
+}
+
+
+
+//-- (->string) Returns a formatted string based on arguments
+function handleFormatting (cards: CardMetadata[], args?: any[]): string {
+
+    for (const arg of args || []) {
+        if (arg.key === 'events') 
+            return setEvents(cards, getEvents(arg.value));
+        if (arg.key === 'pricing') 
+            return setPricing(cards, getPricing(arg.value));
+    }
+    return setCards(cards, 25);
+}
+
+
+
+//-- (->any) Creates a template for the message
+function createTemplate(message: Message, name: string) {
+
+    const BOT_HEX = message.guild?.members.me?.displayHexColor;
+    const BOT_COLOR = BOT_HEX ? parseInt(BOT_HEX.slice(1), 16) : 0x2F3136;
+
+    const embed = new EmbedBuilder()
+        .setColor(BOT_COLOR)
+        .setAuthor({
+            name: `${message.author.username} — ${name}`,
             iconURL: message.author.displayAvatarURL(),
-        },
-        title: `\`🌀\` — Scraping (**${length}**/?) cards...`,
-        description: 
-            '-# Tip: Cycle through your entire inventory to get all the cards.\n' +
-            '-# You can stop this by editing the command to add `push=y`.',
-        footer: { text: "Macrothesley" },
-        timestamp: new Date().toISOString(),
-        color: parseInt(message.guild!.members.me!.displayHexColor.replace('#', ''), 16)
+        })
+        .setFooter({
+            text: "Macrothesley",
+            iconURL: message.client.user.displayAvatarURL()
+        })
+        .setTimestamp(new Date());
+
+    return {
+        embeds: [embed],
+        allowedMentions: { repliedUser: false }
     };
 }
+
+//-- (->any) Creates a message for card fetching
+function onFetchEmbed (message: Message, length: number): any {
+
+    const template = createTemplate(message, 'Inventory Scraper');
+    template.embeds[0]
+        .setTitle(`\`🌀\` — Scraping (**${length}**/?) cards...`)
+        .setDescription(
+            '-# Tip: Cycle through your entire inventory to get all the cards.\n' +
+            '-# You can stop this by editing the command to add `push=y`.'
+        );
+    return template;
+}
+//-- (->any) Creates a message when fetching is complete
 function onCompleteEmbed (message: Message, cards: CardMetadata[], args?: any[]) {
-    return {
-        author: {
-            name: `${message.author.username} — Inventory Scraper`,
-            iconURL: message.author.displayAvatarURL(),
-        },
-        title: `\`🌀\` — Succesfully scraped **${cards.length}** cards.`,
-        description: ('```' + handleFormatting(cards, args) + '```'),
-        footer: { 
-            text: "Macrothesley", 
-            iconURL: message.client.user!.displayAvatarURL() 
-        },
-        timestamp: new Date().toISOString(),
-        color: parseInt(message.guild!.members.me!.displayHexColor.replace('#', ''), 16)
-    }
+
+    const template = createTemplate(message, 'Inventory Scraper');
+    template.embeds[0]
+        .setTitle(`\`🌀\` — Successfully scraped **${cards.length}** cards.`)
+        .setDescription(
+            '-# You may copy each block using the button on the upper right corner.\n' +
+            '```' + handleFormatting(cards, args) + '```'
+        );
+    return template;
 }
 
-function handleCompleteEmbed(message: Message, cards: CardMetadata[], args?: any[]) {
-    const embed = onCompleteEmbed(message, cards, args);
-    if (embed.description.length <= 4000) {
-        return { embed, file: null };
-    }
+//-- (->{embed, file}) Handles the files if the text limit is exceeded
+function handleTextLimit (message: Message, cards: CardMetadata[], args?: any[]) {
 
-    const content = embed.description.slice(3, -3).replace(/``````/g, '\n\n');
+    const embed = onCompleteEmbed(message, cards, args).embeds[0];
+    const description = embed.data.description || '';
+    if (description.length <= 4000)
+        return { embed, file: null };
+    
+    const content = description.slice(3, -3).replace(/``````/g, '\n\n');
     const buffer = Buffer.from(content, 'utf-8');
     const file = new Discord.AttachmentBuilder(buffer, { name: 'cards.txt' });
 
-    embed.description = '';
+    embed.data.description = '';
     return { embed, file };
 }
 
 export {
-    getMatchAndDiscrepancy,
-    handleCardExtraction,
-    handleCardDeduplication,
+    isPageEnd,
+    isCountEqual,
+    getUniqueCards,
+    getCards,
+    setCards,
+    getPricing,
+    setPricing,
+    getEvents,
+    setEvents,
     handleFormatting,
-    handlePricing,
+    createTemplate,
     onFetchEmbed,
     onCompleteEmbed,
-    handleCompleteEmbed
-};
-
-export type { CardMetadata };
+    handleTextLimit
+}
