@@ -38,7 +38,7 @@ export default {
                         name: `${message.author.username} — Inventory Scraper`,
                         icon_url: message.author.displayAvatarURL(),
                     },
-                    title: `\`🌀\` — No cards found in your inventory.`
+                    title: "\`🌀\` — No cards found in your inventory."
                 }], 
                 allowedMentions: { repliedUser: false }
             });
