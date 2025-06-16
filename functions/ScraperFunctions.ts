@@ -1,6 +1,5 @@
 import Discord, { Message } from 'discord.js';
-
-type CardMetadata = { card: string, code: string };
+import { CardMetadata } from '../types/GlobalTypes';
 
 function getMatchAndDiscrepancy (message: Message, length: number) {
     const match = message.embeds[0]?.footer?.text?.match(/^Page (\d+) of (\d+)/i);

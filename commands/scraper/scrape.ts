@@ -1,7 +1,7 @@
 import Discord, { Message } from 'discord.js';
 import SuperClient from '../../extensions/SuperClient';
 
-import { CardMetadata } from '../../functions/f_scraper';
+import { CardMetadata } from '../../functions/ScraperFunctions';
 import { 
     getMatchAndDiscrepancy, 
     handleCardExtraction, 
@@ -10,7 +10,7 @@ import {
     handleFormatting, 
     onCompleteEmbed, 
     onFetchEmbed 
-} from '../../functions/f_scraper';
+} from '../../functions/ScraperFunctions';
 
 export default {
     run: async (client : SuperClient, message: Message, args: any[]) => {

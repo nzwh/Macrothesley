@@ -8,17 +8,17 @@ class SuperClient extends Client {
 
     constructor(){
         super({ intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMembers,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.MessageContent,
-                GatewayIntentBits.GuildMessageReactions,
-                GatewayIntentBits.GuildVoiceStates
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.GuildMembers,
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.MessageContent,
+            GatewayIntentBits.GuildMessageReactions,
+            GatewayIntentBits.GuildVoiceStates
         ], partials: [
-                Partials.Channel,
-                Partials.Message,
-                Partials.Reaction,
-                Partials.User
+            Partials.Channel,
+            Partials.Message,
+            Partials.Reaction,
+            Partials.User
         ]});
         this.commands = new Collection();
         this.aliases = new Collection();
