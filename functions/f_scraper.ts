@@ -74,7 +74,7 @@ function onFetchEmbed (message: Message, length: number) {
         description: 
             '-# Tip: Cycle through your entire inventory to get all the cards.\n' +
             '-# You can stop this by editing the command to add `push=y`.',
-        footer: { text: `Macrothesley` },
+        footer: { text: "Macrothesley" },
         timestamp: new Date().toISOString(),
         color: parseInt(message.guild!.members.me!.displayHexColor.replace('#', ''), 16)
     };
@@ -88,7 +88,7 @@ function onCompleteEmbed (message: Message, cards: CardMetadata[], args?: any[])
         title: `\`🌀\` — Succesfully scraped **${cards.length}** cards.`,
         description: ('```' + handleFormatting(cards, args) + '```'),
         footer: { 
-            text: `Macrothesley`, 
+            text: "Macrothesley", 
             iconURL: message.client.user!.displayAvatarURL() 
         },
         timestamp: new Date().toISOString(),
