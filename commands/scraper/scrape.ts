@@ -104,7 +104,7 @@ export default {
     alias: ['scr', 'collect', 'coll'],
 
     usage: "Scrapes a user's inventory for cards.",
-    categ: (__dirname.split(/[\\/]/).pop()!).toUpperCase(),
+    categ: (__dirname.split(/[\\/]/).pop() || 'default').toUpperCase(),
     status: 'ACTIVE',
     extend: false
 

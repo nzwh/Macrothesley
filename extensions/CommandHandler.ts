@@ -8,7 +8,7 @@ import SuperClient from './SuperClient';
     * @param: suffix : string         -> The filetype to look for
     * @param: client : SuperClient    -> To store the commands 
 */
-const GetFiles = (dir: string, suffix: string, client: SuperClient) => {
+const GetFiles = async (dir: string, suffix: string, client: SuperClient) => {
 
     const master : Dirent[] = fs.readdirSync(dir, { withFileTypes: true });
     for (const file of master) {
@@ -25,7 +25,7 @@ const GetFiles = (dir: string, suffix: string, client: SuperClient) => {
             }
 
         } else if (file.name.endsWith(suffix)) {
-            const command = require(`../${dir}/${file.name}`);
+            const command = await import(`../${dir}/${file.name}`);
             const command_name = file.name.substring(0, file.name.indexOf('.'));
 
             if (client.commands.has(command_name)) {
