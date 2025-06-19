@@ -1,5 +1,5 @@
-import Discord, { Message, Embed, EmbedBuilder, MessagePayload, MessageReplyOptions } from 'discord.js';
-import { CardMetadata } from '../types/GlobalTypes';
+import Discord, { Message, Embed, EmbedBuilder, MessagePayload, MessageReplyOptions, MessageCreateOptions, APIEmbed } from 'discord.js';
+import { CardMetadata, Query } from '../types/GlobalTypes';
 
 //-- (->boolean) Checks if the total card count matches the expected count
 function isCountEqual (message: Message, length: number): boolean {
@@ -85,7 +85,7 @@ function setEvents (cards: CardMetadata[], events: string[]): string {
 
 
 //-- (->string) Returns a formatted string based on arguments
-function handleFormatting (cards: CardMetadata[], template: any, args?: any[]): any {
+function handleFormatting (cards: CardMetadata[], template: MessageCreateOptions, args?: Query[]): MessageCreateOptions {
 
     let formattedString = setCards(cards, 25);
     for (const arg of args || []) {
@@ -97,8 +97,8 @@ function handleFormatting (cards: CardMetadata[], template: any, args?: any[]): 
             formattedString = setCards(cards, 25, true);
     }
 
-    if (args && args.some(arg => arg.key === 'mobile')) {
-        template.embeds[0]
+    if (args?.some(arg => arg.key === 'mobile')) {
+        (template.embeds?.[0] as EmbedBuilder)
             .addFields(formattedString
                 .split('``````')
                 .map((chunk, i) => ({
@@ -109,7 +109,7 @@ function handleFormatting (cards: CardMetadata[], template: any, args?: any[]): 
                 '-# \`🥽\` — Tip: Copy a chunk by long-pressing a chunk and tapping \'Copy\'.'
             )
     } else {
-        template.embeds[0]
+        (template.embeds?.[0] as EmbedBuilder)
             .setDescription(
                 '```' + formattedString + '```' + '\n' +
                 '-# \`🥽\` — Tip: Copy a block using the button on the upper right of a block.'
@@ -121,8 +121,8 @@ function handleFormatting (cards: CardMetadata[], template: any, args?: any[]): 
 
 
 
-//-- (->any) Creates a template for the message
-function createTemplate(message: Message, name: string) {
+//-- (->MessageCreateOptions) Creates a template for the message
+function createTemplate(message: Message, name: string): MessageCreateOptions {
 
     const BOT_HEX = message.guild?.members.me?.displayHexColor;
     const BOT_COLOR = BOT_HEX ? parseInt(BOT_HEX.slice(1), 16) : 0x2F3136;
@@ -142,14 +142,14 @@ function createTemplate(message: Message, name: string) {
     return {
         embeds: [embed],
         allowedMentions: { repliedUser: false }
-    };
+    } as MessageCreateOptions;
 }
 
-//-- (->any) Creates a message for card fetching
-function onFetchEmbed (message: Message, length: number): any {
+//-- (->MessageCreateOptions) Creates a message for card fetching
+function onFetchEmbed (message: Message, length: number): MessageCreateOptions {
 
     const template = createTemplate(message, 'Inventory Scraper');
-    template.embeds[0]
+    (template.embeds?.[0] as EmbedBuilder)
         .setTitle(`\`🌀\` — Scraping (**${length}**/?) cards...`)
         .setDescription(
             '-# Tip: Cycle through your entire inventory to get all the cards.\n' +
@@ -158,20 +158,20 @@ function onFetchEmbed (message: Message, length: number): any {
 
     return template;
 }
-//-- (->any) Creates a message when fetching is complete
-function onCompleteEmbed (message: Message, cards: CardMetadata[], args?: any[]): any {
+//-- (->MessageCreateOptions) Creates a message when fetching is complete
+function onCompleteEmbed (message: Message, cards: CardMetadata[], args?: Query[]): MessageCreateOptions {
 
     const template = createTemplate(message, 'Inventory Scraper');
-    template.embeds[0]
+    (template.embeds?.[0] as EmbedBuilder)
         .setTitle(`\`🌀\` — Successfully scraped **${cards.length}** cards.`)
         
     return handleFormatting(cards, template, args);
 }
 
 //-- (->{embed, file}) Handles the files if the text limit is exceeded
-function handleTextLimit (message: Message, cards: CardMetadata[], args?: any[]) {
+function handleTextLimit (message: Message, cards: CardMetadata[], args?: Query[]) {
 
-    const embed = onCompleteEmbed(message, cards, args).embeds[0];
+    const embed = onCompleteEmbed(message, cards, args).embeds?.[0] as EmbedBuilder;
     const description = embed.data.description || '';
     if (description.length <= 4000)
         return { embeds: [embed] };

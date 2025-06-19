@@ -17,6 +17,7 @@ export default {
         for (const field of replied_embed.fields) 
             tt += field.value.split('\n')[0] + " ";
         message.reply({content: `\`\`\`fix\n${tt}\`\`\`` || "No results found."});
+
     },
 
     name:  __filename.substring(__dirname.length + 1).split(".")[0],

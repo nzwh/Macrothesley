@@ -1,14 +1,14 @@
-import { Client } from 'discord.js';
 import fs, { Dirent } from 'fs';
+import SuperClient from './SuperClient';
 
 /*  Function: GetFiles
     Parses all files within the directory folder into a 
     command collection in "client.commands".
-    * @param: dir : string    -> The directory path
-    * @param: suffix : string -> The filetype to look for
-    * @param: client : any    -> To store the commands 
+    * @param: dir : string           -> The directory path
+    * @param: suffix : string         -> The filetype to look for
+    * @param: client : SuperClient    -> To store the commands 
 */
-const GetFiles = (dir: string, suffix: string, client: any) => {
+const GetFiles = (dir: string, suffix: string, client: SuperClient) => {
 
     const master : Dirent[] = fs.readdirSync(dir, { withFileTypes: true });
     for (const file of master) {
@@ -46,6 +46,6 @@ const GetFiles = (dir: string, suffix: string, client: any) => {
     }
 };
 
-export default (client: Client) => {
+export default (client: SuperClient) => {
     GetFiles('commands', '.ts', client);
 };

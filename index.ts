@@ -2,11 +2,12 @@ import { ActivityType, Collection } from 'discord.js';
 import * as dotenv from 'dotenv';
 import SuperClient from './extensions/SuperClient';
 import CommandHandler from './extensions/CommandHandler';
+import { Query } from './types/GlobalTypes';
 
 // Initializing dotenv, prefix configuration
+console.log('\n');
 dotenv.config();
 const prefix = process.env.PREFIX || '-';
-console.log('\n');
 
 // Initializing and configuring the client
 const client = new SuperClient();
@@ -44,7 +45,7 @@ client.on('messageCreate', async (message) => {
 
         // Extract the queries and map them to key-value pairs
         const matches = [...ScrapeQuery[1].matchAll(/(\w+)=((\[[^\]]*\])|([^\s]+))/g)];
-        const queries = matches.map(m => ({ key: m[1], value: m[2].trim() }));
+        const queries: Query[] = matches.map(m => ({ key: m[1], value: m[2].trim() }));
 
         // Execute the command if it exists
         for (const { key } of queries) {

@@ -1,7 +1,7 @@
-import Discord, { Message, TextChannel } from 'discord.js';
+import { Embed, EmbedBuilder, Message, MessageEditOptions, MessageReplyOptions, TextChannel } from 'discord.js';
 import SuperClient from '../../extensions/SuperClient';
 
-import { CardMetadata } from '../../types/GlobalTypes';
+import { CardMetadata, Command, Query } from '../../types/GlobalTypes';
 import { 
     isCountEqual,
     getUniqueCards,
@@ -13,7 +13,7 @@ import {
 } from '../../functions/ScraperFunctions';
 
 export default {
-    run: async (client : SuperClient, message: Message, args: any[]) => {
+    run: async (client : SuperClient, message: Message, args: Query[]) => {
 
         // Initialize the card structure and constants
         const BOT_ID = '730104910502297670'
@@ -37,14 +37,26 @@ export default {
         // If no embed was found, end early, and inform the user
         if (!baseMessage || baseMessage.embeds[0].fields.length === 0) {
             const template = createTemplate(message, 'Inventory Scraper');
-            template.embeds[0]
+            (template.embeds?.[0] as EmbedBuilder)
                 .setTitle("\`🌀\` — No cards found in your inventory.")
-            return message.reply(template as Discord.MessageReplyOptions);
+            return message.reply(template as MessageReplyOptions);
         }
                     
         // Extract cards from the initial embed
         if (baseMessage.embeds[0])
             CardPool.push(...getCards(baseMessage.embeds[0]));
+
+        // Send the initial message to indicate processing
+        const transparency = await message.reply(
+            // Send an embed depending on the card count
+            (isCountEqual(baseMessage, CardPool.length)) ?
+                onCompleteEmbed(message, CardPool) : 
+                onFetchEmbed(message, CardPool.length)
+        );
+
+        // If the embed indicates the last page, clear the card collection
+        if (isCountEqual(baseMessage, CardPool.length))
+            return clearContent();
 
         // Filter for updates to the bot's response
         const filter = (m: Message) => 
@@ -82,21 +94,9 @@ export default {
                 return clearContent();
             // If the page is not yet complete, update the embed
             } else {
-                transparency.edit(onFetchEmbed(message, CardPool.length));
+                transparency.edit(onFetchEmbed(message, CardPool.length) as MessageEditOptions);
             }
         });
-
-        // Send the initial message to indicate processing
-        const transparency = await message.reply(
-            // Send an embed depending on the card count
-            (isCountEqual(baseMessage, CardPool.length)) ?
-                onCompleteEmbed(message, CardPool) : 
-                onFetchEmbed(message, CardPool.length)
-        );
-
-        // If the embed indicates the last page, clear the card collection
-        if (isCountEqual(baseMessage, CardPool.length))
-            return clearContent();
     
     },
 
@@ -107,4 +107,5 @@ export default {
     categ: (__dirname.split(/[\\/]/).pop()!).toUpperCase(),
     status: 'ACTIVE',
     extend: false
-};
+
+} as Command;
