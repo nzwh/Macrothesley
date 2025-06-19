@@ -57,8 +57,10 @@ export default {
             if (newMsg.partial) 
                 newMsg = await newMsg.fetch();
 
+            const messageContent = newMsg.content.toLowerCase();
+
             // If the message from the user says push=y, stop listening for updates
-            if (newMsg.content.toLowerCase().includes('push=y')) {
+            if (messageContent.toLowerCase().includes('push=y')) {
                 transparency.edit(handleTextLimit(message, CardPool, args));
                 return clearContent();
             }

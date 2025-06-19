@@ -1,9 +1,10 @@
-import Discord, { ActivityType } from 'discord.js';
+import { ActivityType, Collection } from 'discord.js';
+import * as dotenv from 'dotenv';
 import SuperClient from './extensions/SuperClient';
 import CommandHandler from './extensions/CommandHandler';
 
 // Initializing dotenv, prefix configuration
-require('dotenv').config();
+dotenv.config();
 const prefix = process.env.PREFIX || '-';
 console.log('\n');
 
@@ -20,20 +21,23 @@ client.once('ready', () => {
 
 // Setting up collections and handling commands
 client.categories = [];
-client.commands = new Discord.Collection();
-client.aliases = new Discord.Collection();
+client.commands = new Collection();
+client.aliases = new Collection();
 CommandHandler(client);
 
 // Handling message creation
 client.on('messageCreate', async (message) => {
 
+    //-- Case-insensitive message handling
+    const messageContent = message.content.toLowerCase();
+
     //-- Prefix reminder handling
-    if ((message.content.split(' '))[0] === `<@${client.user?.id}>`) 
+    if ((messageContent.split(' '))[0] === `<@${client.user?.id}>`) 
         message.channel.send(`> Hello, my prefix is \`"${prefix}"\`.`);
     
     //-- Scrape command handling
     const ScrapeCommands = new Set(["!inv", "!inventory", "!mp", "!marketplace"]);
-    const ScrapeQuery = message.content.toLowerCase().split(/ (.+)/);
+    const ScrapeQuery = messageContent.toLowerCase().split(/ (.+)/);
 
     // Execute the command if its a scrape command
     if (ScrapeCommands.has(ScrapeQuery[0]) && ScrapeQuery.length > 2) {
@@ -53,11 +57,11 @@ client.on('messageCreate', async (message) => {
 
     //-- Regular command handling
     // If the message is from a bot, not in a guild, or does not start with the prefix, ignore it
-    if (message.author.bot || !message.guild || !message.content.startsWith(prefix)) 
+    if (message.author.bot || !message.guild || !messageContent.startsWith(prefix)) 
         return;
 
     // If the message does not start with the prefix, ignore it
-    const args = message.content.substring(prefix.length).split(" ");
+    const args = messageContent.substring(prefix.length).split(" ");
     // Execute the command if it exists
     const cmd = client.commands.get(args[0].toLowerCase()) 
         || client.commands.get(client.aliases.get(args[0].toLowerCase()));

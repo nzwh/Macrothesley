@@ -32,17 +32,19 @@ function getCards (embed: Embed): CardMetadata[] {
     return [...map.values()];
 }
 //-- (->string) Returns a formatted string with the default settings
-function setCards (cards: CardMetadata[], chunkSize: number): string {
+function setCards (cards: CardMetadata[], chunkSize: number, full?: boolean): string {
 
-    return cards
+    const text = cards
         .map(card => card.code)
         .reduce((acc, code, i) => {
-            const chunkIndex = Math.floor(i / 25);
+            const chunkIndex = Math.floor(i / chunkSize);
             acc[chunkIndex] = (acc[chunkIndex] || []).concat(code);
             return acc;
         }, [] as string[][])
         .map(chunk => chunk.join(' '))
-        .join('``````');
+
+    return full ? text.join(' ') : text.join('``````') ;
+
 }
 
 //-- (->Record<string, number>) Extracts the pricing information from a string
@@ -83,15 +85,38 @@ function setEvents (cards: CardMetadata[], events: string[]): string {
 
 
 //-- (->string) Returns a formatted string based on arguments
-function handleFormatting (cards: CardMetadata[], args?: any[]): string {
+function handleFormatting (cards: CardMetadata[], template: any, args?: any[]): any {
 
+    let formattedString = setCards(cards, 25);
     for (const arg of args || []) {
         if (arg.key === 'events') 
-            return setEvents(cards, getEvents(arg.value));
+            formattedString = setEvents(cards, getEvents(arg.value));
         if (arg.key === 'pricing') 
-            return setPricing(cards, getPricing(arg.value));
+            formattedString = setPricing(cards, getPricing(arg.value));
+        if (arg.key === 'full')
+            formattedString = setCards(cards, 25, true);
     }
-    return setCards(cards, 25);
+
+    if (args && args.some(arg => arg.key === 'mobile')) {
+        template.embeds[0]
+            .addFields(formattedString
+                .split('``````')
+                .map((chunk, i) => ({
+                    name: `\`➖\` \`Chunk\` \`#${i + 1}\``,
+                    value: chunk || '\u200b'
+                })))
+            .setDescription(
+                '-# \`🥽\` — Tip: Copy a chunk by long-pressing a chunk and tapping \'Copy\'.'
+            )
+    } else {
+        template.embeds[0]
+            .setDescription(
+                '```' + formattedString + '```' + '\n' +
+                '-# \`🥽\` — Tip: Copy a block using the button on the upper right of a block.'
+            )
+    }
+
+    return template;
 }
 
 
@@ -139,12 +164,8 @@ function onCompleteEmbed (message: Message, cards: CardMetadata[], args?: any[])
     const template = createTemplate(message, 'Inventory Scraper');
     template.embeds[0]
         .setTitle(`\`🌀\` — Successfully scraped **${cards.length}** cards.`)
-        .setDescription(
-            '```' + handleFormatting(cards, args) + '```' + '\n' +
-            '-# \`🥽\` — Tip: Copy a block using the button on the upper right of a block.'
-        );
         
-    return template;
+    return handleFormatting(cards, template, args);
 }
 
 //-- (->{embed, file}) Handles the files if the text limit is exceeded
