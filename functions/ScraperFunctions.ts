@@ -1,11 +1,6 @@
 import Discord, { Message, Embed, EmbedBuilder, MessagePayload, MessageReplyOptions } from 'discord.js';
 import { CardMetadata } from '../types/GlobalTypes';
 
-//-- (->boolean) Checks if the current page is the last page
-function isPageEnd(message: Message): boolean {
-    const match = message.embeds[0]?.footer?.text?.match(/^Page (\d+) of (\d+)/i);
-    return match ? match[1] === match[2] : false;
-}
 //-- (->boolean) Checks if the total card count matches the expected count
 function isCountEqual (message: Message, length: number): boolean {
     return (length === Number(message.embeds[0].description?.match(/has (\d+) cards/)?.[1] || 0));
@@ -135,18 +130,20 @@ function onFetchEmbed (message: Message, length: number): any {
             '-# Tip: Cycle through your entire inventory to get all the cards.\n' +
             '-# You can stop this by editing the command to add `push=y`.'
         );
+
     return template;
 }
 //-- (->any) Creates a message when fetching is complete
-function onCompleteEmbed (message: Message, cards: CardMetadata[], args?: any[]) {
+function onCompleteEmbed (message: Message, cards: CardMetadata[], args?: any[]): any {
 
     const template = createTemplate(message, 'Inventory Scraper');
     template.embeds[0]
         .setTitle(`\`🌀\` — Successfully scraped **${cards.length}** cards.`)
         .setDescription(
-            '-# You may copy each block using the button on the upper right corner.\n' +
-            '```' + handleFormatting(cards, args) + '```'
+            '```' + handleFormatting(cards, args) + '```' + '\n' +
+            '-# \`🥽\` — Tip: Copy a block using the button on the upper right of a block.'
         );
+        
     return template;
 }
 
@@ -156,18 +153,17 @@ function handleTextLimit (message: Message, cards: CardMetadata[], args?: any[])
     const embed = onCompleteEmbed(message, cards, args).embeds[0];
     const description = embed.data.description || '';
     if (description.length <= 4000)
-        return { embed, file: null };
-    
+        return { embeds: [embed] };
+
     const content = description.slice(3, -3).replace(/``````/g, '\n\n');
     const buffer = Buffer.from(content, 'utf-8');
     const file = new Discord.AttachmentBuilder(buffer, { name: 'cards.txt' });
 
     embed.data.description = '';
-    return { embed, file };
+    return { embeds: [embed], ...(file && { files: [file] }) }
 }
 
 export {
-    isPageEnd,
     isCountEqual,
     getUniqueCards,
     getCards,
