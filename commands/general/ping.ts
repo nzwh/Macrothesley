@@ -2,7 +2,7 @@ import Discord, { Message } from 'discord.js';
 import SuperClient from '../../extensions/SuperClient';
 
 export default {
-    run: async (client : SuperClient, message: Message, args: any[]) => {
+    run: async (client: SuperClient, message: Message, string: string[]) => {
 
         const pn_embed = new Discord.EmbedBuilder()
             .setDescription('\`🎮 Pinging...\`')

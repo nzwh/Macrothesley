@@ -1,9 +1,10 @@
 import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
+import { Command } from '../types/GlobalTypes';
 
 class SuperClient extends Client {
 
-    public commands: Collection<unknown, any>;
-    public aliases: Collection<unknown, any>;
+    public commands: Collection<string, Command>;
+    public aliases: Collection<string, string>;
     public categories: Array<string>;
 
     constructor(){
