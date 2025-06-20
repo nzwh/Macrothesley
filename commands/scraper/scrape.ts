@@ -1,4 +1,4 @@
-import { Embed, EmbedBuilder, Message, MessageEditOptions, MessageReplyOptions, TextChannel } from 'discord.js';
+import { EmbedBuilder, Message, MessageEditOptions, MessageReplyOptions, TextChannel } from 'discord.js';
 import SuperClient from '../../extensions/SuperClient';
 
 import { CardMetadata, Command, Query } from '../../types/GlobalTypes';
@@ -103,8 +103,6 @@ export default {
                 transparency.edit(onFetchEmbed(message, CardPool.length) as MessageEditOptions);
                 return;
             }
-
-            return;
         });
 
         return;

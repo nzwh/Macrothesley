@@ -2,7 +2,7 @@ import { Message } from 'discord.js';
 import SuperClient from '../../extensions/SuperClient';
 
 export default {
-    run: async (client : SuperClient, message: Message, args: string[]) => {
+    run: async (client: SuperClient, message: Message, args: string[]) => {
         
         const replied_message_id = message.reference?.messageId;
         if (!replied_message_id) return;

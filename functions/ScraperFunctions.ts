@@ -1,4 +1,4 @@
-import Discord, { Message, Embed, EmbedBuilder, MessagePayload, MessageReplyOptions, MessageCreateOptions, APIEmbed } from 'discord.js';
+import { AttachmentBuilder, Embed, EmbedBuilder, Message, MessageCreateOptions } from 'discord.js';
 import { CardMetadata, Query } from '../types/GlobalTypes';
 
 //-- (->boolean) Checks if the total card count matches the expected count
@@ -178,7 +178,7 @@ function handleTextLimit (message: Message, cards: CardMetadata[], args?: Query[
 
     const content = description.slice(3, -3).replace(/``````/g, '\n\n');
     const buffer = Buffer.from(content, 'utf-8');
-    const file = new Discord.AttachmentBuilder(buffer, { name: 'cards.txt' });
+    const file = new AttachmentBuilder(buffer, { name: 'cards.txt' });
 
     embed.data.description = '';
     return { embeds: [embed], ...(file && { files: [file] }) }
