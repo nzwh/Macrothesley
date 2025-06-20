@@ -40,7 +40,8 @@ export default {
             const template = createTemplate(message, 'Inventory Scraper');
             (template.embeds?.[0] as EmbedBuilder)
                 .setTitle("`🌀` — No cards found in your inventory.")
-            return message.reply(template as MessageReplyOptions);
+            message.reply(template as MessageReplyOptions);
+            return;
         }
                     
         // Extract cards from the initial embed
@@ -56,8 +57,10 @@ export default {
         );
 
         // If the embed indicates the last page, clear the card collection
-        if (isCountEqual(baseMessage, CardPool.length))
-            return clearContent();
+        if (isCountEqual(baseMessage, CardPool.length)) {
+            clearContent();
+            return;
+        }
 
         // Filter for updates to the bot's response
         const filter = (m: Message) => 
@@ -75,7 +78,8 @@ export default {
             // If the message from the user says push=y, stop listening for updates
             if (messageContent.toLowerCase().includes('push=y')) {
                 transparency.edit(handleTextLimit(message, CardPool, args));
-                return clearContent();
+                clearContent();
+                return;
             }
 
             // If the message doesn't match the filter, ignore it
@@ -92,10 +96,12 @@ export default {
             // If the card count is equal to the total, edit the message
             if (isCountEqual(newMsg, CardPool.length)) {
                 transparency.edit(handleTextLimit(message, CardPool, args));
-                return clearContent();
+                clearContent();
+                return;
             // If the page is not yet complete, update the embed
             } else {
                 transparency.edit(onFetchEmbed(message, CardPool.length) as MessageEditOptions);
+                return;
             }
 
             return;
@@ -103,7 +109,7 @@ export default {
 
         return;
     },
-
+    
     name:  __filename.substring(__dirname.length + 1).split(".")[0],
     alias: ['scr', 'collect', 'coll'],
 

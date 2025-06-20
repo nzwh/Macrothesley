@@ -65,7 +65,7 @@ client.on('messageCreate', async (message) => {
     // Execute the command if it exists
     const cmd = client.commands.get(args[0].toLowerCase()) 
         || client.commands.get(client.aliases.get(args[0].toLowerCase()) || "");
-    if (cmd) return cmd.run(client, message, args.slice(1));
+    if (cmd) await cmd.run(client, message, args.slice(1));
     
 });
 
