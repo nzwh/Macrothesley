@@ -8,7 +8,7 @@ export default {
         const BOT_COLOR = BOT_HEX ? parseInt(BOT_HEX.slice(1), 16) : 0x2F3136;
 
         const pn_embed = new Discord.EmbedBuilder()
-            .setDescription('\`🎮 Pinging...\`')
+            .setDescription('`🎮 Pinging...`')
             .setColor(BOT_COLOR);
 
         const msg = await message.reply({ allowedMentions: { repliedUser: false }, 
@@ -19,6 +19,8 @@ export default {
                     `\`🎮 Pong!~  ⟶  ◽ Latency: ${Math.floor(msg.createdTimestamp - message.createdTimestamp)}ms\``)
             ]
         });
+
+        return null;
     },
 
     name:  __filename.substring(__dirname.length + 1).split(".")[0],

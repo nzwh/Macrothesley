@@ -1,12 +1,11 @@
 import { ActivityType, Collection } from 'discord.js';
-import * as dotenv from 'dotenv';
+import { config } from 'dotenv';
 import SuperClient from './extensions/SuperClient';
 import CommandHandler from './extensions/CommandHandler';
 import { Query } from './types/GlobalTypes';
 
 // Initializing dotenv, prefix configuration
-console.log('\n');
-dotenv.config();
+config() && console.log('\n');
 const prefix = process.env.PREFIX || '-';
 
 // Initializing and configuring the client

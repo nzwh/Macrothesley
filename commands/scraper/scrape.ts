@@ -38,7 +38,7 @@ export default {
         if (!baseMessage || baseMessage.embeds[0].fields.length === 0) {
             const template = createTemplate(message, 'Inventory Scraper');
             (template.embeds?.[0] as EmbedBuilder)
-                .setTitle("\`🌀\` — No cards found in your inventory.")
+                .setTitle("`🌀` — No cards found in your inventory.")
             return message.reply(template as MessageReplyOptions);
         }
                     
@@ -78,9 +78,9 @@ export default {
             }
 
             // If the message doesn't match the filter, ignore it
-            if (!filter(newMsg)) return;
+            if (!filter(newMsg)) return null;
             // If the embed has no fields, ignore it
-            if (newMsg.embeds.length <= 0) return;
+            if (newMsg.embeds.length <= 0) return null;
 
             // Update the card collection with new cards
             const fetchedCards = getUniqueCards([
@@ -96,8 +96,11 @@ export default {
             } else {
                 transparency.edit(onFetchEmbed(message, CardPool.length) as MessageEditOptions);
             }
+
+            return null;
         });
-    
+
+        return null;
     },
 
     name:  __filename.substring(__dirname.length + 1).split(".")[0],

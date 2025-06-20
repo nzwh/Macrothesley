@@ -106,13 +106,13 @@ function handleFormatting (cards: CardMetadata[], template: MessageCreateOptions
                     value: chunk || '\u200b'
                 })))
             .setDescription(
-                '-# \`🥽\` — Tip: Copy a chunk by long-pressing a chunk and tapping \'Copy\'.'
+                '-# `🥽` — Tip: Copy a chunk by long-pressing a chunk and tapping `Copy`.'
             )
     } else {
         (template.embeds?.[0] as EmbedBuilder)
             .setDescription(
-                '```' + formattedString + '```' + '\n' +
-                '-# \`🥽\` — Tip: Copy a block using the button on the upper right of a block.'
+                `\`\`\`${formattedString}'\`\`\`\n` +
+                '-# `🥽` — Tip: Copy a block using the button on the upper right of a block.'
             )
     }
 

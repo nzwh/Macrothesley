@@ -15,9 +15,10 @@ export default {
 
         let tt = '';
         for (const field of replied_embed.fields) 
-            tt += field.value.split('\n')[0] + " ";
+            tt += `${field.value.split('\n')[0]} `;
         message.reply({ content: `\`\`\`fix\n${tt}\`\`\`` });
 
+        return null;
     },
 
     name:  __filename.substring(__dirname.length + 1).split(".")[0],

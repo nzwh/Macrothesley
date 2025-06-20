@@ -14,7 +14,7 @@ const GetFiles = async (dir: string, suffix: string, client: SuperClient) => {
     for (const file of master) {
 
         if (file.isDirectory()) {
-            let name = file.name.charAt(0).toUpperCase() + file.name.slice(1);
+            const name = file.name.charAt(0).toUpperCase() + file.name.slice(1);
 
             if (fs.readdirSync(`${dir}/${file.name}`).filter(f => f.endsWith('.js') || f.endsWith('.ts')).length === 0) {
                 console.log(`  ❱❱ No commands in the ${name} folder to load.`);
