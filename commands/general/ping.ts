@@ -2,7 +2,7 @@ import { EmbedBuilder, Message } from 'discord.js';
 import SuperClient from '../../extensions/SuperClient';
 
 export default {
-    run: async (client: SuperClient, message: Message, args: string[]) => {
+    run: async (client: SuperClient, message: Message, args?: string[]) => {
 
         const BOT_HEX = message.guild?.members.me?.displayHexColor;
         const BOT_COLOR = BOT_HEX ? parseInt(BOT_HEX.slice(1), 16) : 0x2F3136;

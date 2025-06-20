@@ -13,7 +13,7 @@ import {
 } from '../../functions/ScraperFunctions';
 
 export default {
-    run: async (client : SuperClient, message: Message, args: Query[]) => {
+    run: async (client : SuperClient, message: Message, args?: Query[]) => {
 
         // Initialize the card structure and constants
         const BOT_ID = '730104910502297670'
@@ -97,11 +97,9 @@ export default {
             if (isCountEqual(newMsg, CardPool.length)) {
                 transparency.edit(handleTextLimit(message, CardPool, args));
                 clearContent();
-                return;
             // If the page is not yet complete, update the embed
             } else {
                 transparency.edit(onFetchEmbed(message, CardPool.length) as MessageEditOptions);
-                return;
             }
         });
 
