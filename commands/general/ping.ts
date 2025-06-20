@@ -11,16 +11,18 @@ export default {
             .setDescription('`🎮 Pinging...`')
             .setColor(BOT_COLOR);
 
-        const msg = await message.reply({ allowedMentions: { repliedUser: false }, 
-            embeds: [pn_embed] });
+        const msg = await message.reply({ 
+            allowedMentions: { repliedUser: false },
+             embeds: [pn_embed] 
+        });
         msg.edit({ allowedMentions: { repliedUser: false }, 
             embeds: [
-                pn_embed.setDescription(
-                    `\`🎮 Pong!~  ⟶  ◽ Latency: ${Math.floor(msg.createdTimestamp - message.createdTimestamp)}ms\``)
+                pn_embed.setDescription(`\`🎮 Pong!~  ⟶  ◽ Latency: 
+                    ${Math.floor(msg.createdTimestamp - message.createdTimestamp)}ms\``)
             ]
         });
 
-        return null;
+        return;
     },
 
     name:  __filename.substring(__dirname.length + 1).split(".")[0],

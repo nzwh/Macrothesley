@@ -21,6 +21,7 @@ export default {
         // Function to clear the card pool
         function clearContent() {
             CardPool.length = 0;
+            return;
         }
 
         // Filter only for the bot's response with an embed
@@ -78,9 +79,9 @@ export default {
             }
 
             // If the message doesn't match the filter, ignore it
-            if (!filter(newMsg)) return null;
+            if (!filter(newMsg)) return;
             // If the embed has no fields, ignore it
-            if (newMsg.embeds.length <= 0) return null;
+            if (newMsg.embeds.length <= 0) return;
 
             // Update the card collection with new cards
             const fetchedCards = getUniqueCards([
@@ -97,10 +98,10 @@ export default {
                 transparency.edit(onFetchEmbed(message, CardPool.length) as MessageEditOptions);
             }
 
-            return null;
+            return;
         });
 
-        return null;
+        return;
     },
 
     name:  __filename.substring(__dirname.length + 1).split(".")[0],

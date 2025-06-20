@@ -18,7 +18,7 @@ export default {
             tt += `${field.value.split('\n')[0]} `;
         message.reply({ content: `\`\`\`fix\n${tt}\`\`\`` });
 
-        return null;
+        return;
     },
 
     name:  __filename.substring(__dirname.length + 1).split(".")[0],
