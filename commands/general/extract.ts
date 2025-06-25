@@ -1,4 +1,5 @@
 import { Message } from 'discord.js';
+import { Command } from '../../types/GlobalTypes';
 import SuperClient from '../../extensions/SuperClient';
 
 export default {
@@ -28,4 +29,5 @@ export default {
     categ: (__dirname.split(/[\\/]/).pop() || 'default').toUpperCase(),
     status: 'ACTIVE',
     extend: false
-};
+
+} as Command;

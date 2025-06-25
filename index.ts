@@ -50,7 +50,7 @@ client.on('messageCreate', async (message) => {
         for (const { key } of queries) {
             const cmd = client.commands.get(key.toLowerCase())
                 || client.commands.get(client.aliases.get(key.toLowerCase()) || "");
-            if (cmd) await cmd.run(client, message, queries);            
+            if (cmd) cmd.run(client, message, queries);            
         }
         return;
     }
@@ -65,7 +65,7 @@ client.on('messageCreate', async (message) => {
     // Execute the command if it exists
     const cmd = client.commands.get(args[0].toLowerCase()) 
         || client.commands.get(client.aliases.get(args[0].toLowerCase()) || "");
-    if (cmd) await cmd.run(client, message, args.slice(1));
+    if (cmd) cmd.run(client, message, args.slice(1));
     
 });
 

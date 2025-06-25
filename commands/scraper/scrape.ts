@@ -1,7 +1,10 @@
-import { EmbedBuilder, Message, MessageEditOptions, MessageReplyOptions, TextChannel } from 'discord.js';
-import SuperClient from '../../extensions/SuperClient';
-
-import { CardMetadata, Command, Query } from '../../types/GlobalTypes';
+import { 
+    EmbedBuilder, 
+    Message, 
+    MessageEditOptions, 
+    MessageReplyOptions, 
+    TextChannel } from 'discord.js';
+import { CardMetadata, Query } from '../../types/GlobalTypes';
 import { 
     isCountEqual,
     getUniqueCards,
@@ -11,6 +14,7 @@ import {
     handleTextLimit,
     createTemplate
 } from '../../functions/ScraperFunctions';
+import SuperClient from '../../extensions/SuperClient';
 
 export default {
     run: async (client : SuperClient, message: Message, args?: Query[]) => {
@@ -114,4 +118,4 @@ export default {
     status: 'ACTIVE',
     extend: false
 
-} as Command;
+};
