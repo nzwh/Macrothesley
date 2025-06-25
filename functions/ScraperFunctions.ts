@@ -110,9 +110,10 @@ function handleFormatting (cards: CardMetadata[], template: MessageCreateOptions
             )
     } else {
         (template.embeds?.[0] as EmbedBuilder)
-            .setDescription(
-                `\`\`\`${formattedString}'\`\`\`\n` +
-                '-# `🥽` — Tip: Copy a block using the button on the upper right of a block.'
+            .setDescription(formattedString.length <= 4000 ?
+                (`\`\`\`${formattedString}'\`\`\`\n` +
+                '-# `🥽` — Tip: Copy a block using the button on the upper right of a block.') :
+                ('Exceeded text limit.')
             )
     }
 
@@ -173,10 +174,10 @@ function handleTextLimit (message: Message, cards: CardMetadata[], args?: Query[
 
     const embed = onCompleteEmbed(message, cards, args).embeds?.[0] as EmbedBuilder;
     const description = embed.data.description || '';
-    if (description.length <= 4000)
+    if (description !== "Exceeded text limit.")
         return { embeds: [embed] };
 
-    const content = description.slice(3, -3).replace(/``````/g, '\n\n');
+    const content = setCards(cards, 25, false).replace(/``````/g, '\n\n');
     const buffer = Buffer.from(content, 'utf-8');
     const file = new AttachmentBuilder(buffer, { name: 'cards.txt' });
 
