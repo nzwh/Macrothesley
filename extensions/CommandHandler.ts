@@ -1,5 +1,6 @@
 import fs, { Dirent } from 'fs';
 import SuperClient from './SuperClient';
+import { Command } from '../types/GlobalTypes';
 
 /*  Function: GetFiles
     Parses all files within the directory folder into a 
@@ -8,7 +9,7 @@ import SuperClient from './SuperClient';
     * @param: suffix : string         -> The filetype to look for
     * @param: client : SuperClient    -> To store the commands 
 */
-const GetFiles = async (dir: string, suffix: string, client: SuperClient) => {
+const GetFiles = (dir: string, suffix: string, client: SuperClient) => {
 
     const master : Dirent[] = fs.readdirSync(dir, { withFileTypes: true });
     for (const file of master) {
@@ -25,7 +26,7 @@ const GetFiles = async (dir: string, suffix: string, client: SuperClient) => {
             }
 
         } else if (file.name.endsWith(suffix)) {
-            const command = await import(`../${dir}/${file.name}`);
+            let command = require(`../${dir}/${file.name}`).default as Command;
             const command_name = file.name.substring(0, file.name.indexOf('.'));
 
             if (client.commands.has(command_name)) {
@@ -34,8 +35,8 @@ const GetFiles = async (dir: string, suffix: string, client: SuperClient) => {
                 client.commands.set(command_name, command);
             }
 
-            if (!command.default.alias) continue;
-            for (const alias of command.default.alias) {
+            if (!command.alias) continue;
+            for (const alias of command.alias) {
                 if (client.aliases.has(alias)) {
                     console.log(`     [!] The alias "${alias}" of "${command_name}" has already been loaded.`);
                 } else {
