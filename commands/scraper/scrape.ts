@@ -80,7 +80,7 @@ export default {
             const messageContent = newMsg.content.toLowerCase();
 
             // If the message from the user says push=y, stop listening for updates
-            if (messageContent.toLowerCase().includes('push=y')) {
+            if (messageContent.includes('push=y') && message.author.id === newMsg.author.id) {
                 transparency.edit(handleTextLimit(message, CardPool, args));
                 clearContent();
                 return;

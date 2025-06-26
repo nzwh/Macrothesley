@@ -111,7 +111,7 @@ function handleFormatting (cards: CardMetadata[], template: MessageCreateOptions
     } else {
         (template.embeds?.[0] as EmbedBuilder)
             .setDescription(formattedString.length <= 4000 ?
-                (`\`\`\`${formattedString}'\`\`\`\n` +
+                (`\`\`\`${formattedString}\`\`\`\n` +
                 '-# `🥽` — Tip: Copy a block using the button on the upper right of a block.') :
                 ('Exceeded text limit.')
             )
