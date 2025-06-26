@@ -44,7 +44,7 @@ export default {
         const transparency = await message.reply(
             // Send an embed depending on the card count
             (isCountEqual(baseMessage, CardPool.length)) ?
-                onCompleteEmbed(message, CardPool) : 
+                onCompleteEmbed(message, CardPool, args) : 
                 onFetchEmbed(message, CardPool.length)
         );
 
