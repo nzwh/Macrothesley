@@ -1,0 +1,13 @@
+app = 'macrothesley'
+primary_region = 'lhr'
+
+[build]
+  builtin = "node"
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+
+  # Allow machines to run continuously
+  auto_start_machines = false
+  auto_stop_machines = false
