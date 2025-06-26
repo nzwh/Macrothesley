@@ -28,6 +28,9 @@ CommandHandler(client);
 // Handling message creation
 client.on('messageCreate', async (message) => {
 
+    //-- Setting the bot's color based on the guild's hex color
+    const guildHex = message.guild?.members.me?.displayHexColor;
+    client.color = guildHex ? parseInt(guildHex.slice(1), 16) : 0x000;
     //-- Case-insensitive message handling
     const messageContent = message.content.toLowerCase();
 
