@@ -1,6 +1,6 @@
-import { Message } from 'discord.js';
-import { Command } from '../../types/GlobalTypes';
 import SuperClient from '../../extensions/SuperClient';
+import { Command } from '../../types/GlobalTypes';
+import { Message } from 'discord.js';
 
 export default {
     run: async (client: SuperClient, message: Message, args?: string[]) => {

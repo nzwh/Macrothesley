@@ -1,6 +1,6 @@
-import { EmbedBuilder, Message } from 'discord.js';
-import { Command } from '../../types/GlobalTypes';
 import SuperClient from '../../extensions/SuperClient';
+import { Command } from '../../types/GlobalTypes';
+import { EmbedBuilder, Message } from 'discord.js';
 
 export default {
     run: async (client: SuperClient, message: Message, args?: string[]) => {
@@ -14,11 +14,13 @@ export default {
 
         const msg = await message.reply({ 
             allowedMentions: { repliedUser: false },
-             embeds: [pn_embed] 
+            embeds: [pn_embed] 
         });
-        msg.edit({ allowedMentions: { repliedUser: false }, 
-            embeds: [
-                pn_embed.setDescription(`\`🎮 Pong!~  ⟶  ◽ Latency: ${Math.floor(msg.createdTimestamp - message.createdTimestamp)}ms\``)
+
+        msg.edit({ 
+            allowedMentions: { repliedUser: false }, 
+            embeds: [pn_embed
+                .setDescription(`\`🎮 Pong!~  ⟶  ◽ Latency: ${Math.floor(msg.createdTimestamp - message.createdTimestamp)}ms\``)
             ]
         });
 

@@ -1,26 +1,14 @@
-import { 
-    EmbedBuilder, 
-    Message, 
-    MessageEditOptions, 
-    MessageReplyOptions, 
-    TextChannel } from 'discord.js';
-import { CardMetadata, Query } from '../../types/GlobalTypes';
-import { 
-    isCountEqual,
-    getUniqueCards,
-    getCards,
-    onFetchEmbed,
-    onCompleteEmbed,
-    handleTextLimit,
-    createTemplate
-} from '../../functions/ScraperFunctions';
 import SuperClient from '../../extensions/SuperClient';
+
+import { CardMetadata, Command, Query } from '../../types/GlobalTypes';
+import { isCountEqual, getUniqueCards, getCards, onFetchEmbed, onCompleteEmbed, handleTextLimit, createTemplate } from '../../functions/ScraperFunctions';
+import { EmbedBuilder, Message, MessageEditOptions, MessageReplyOptions, TextChannel } from 'discord.js';
 
 export default {
     run: async (client : SuperClient, message: Message, args?: Query[]) => {
 
         // Initialize the card structure and constants
-        const BOT_ID = '730104910502297670'
+        const BotID = process.env.BOT_ID;
         const CardPool: CardMetadata[] = [];
         // Function to clear the card pool
         function clearContent() {
@@ -30,7 +18,7 @@ export default {
 
         // Filter only for the bot's response with an embed
         const initialFilter = (m: Message) =>
-            m.author.id === BOT_ID &&
+            m.author.id === BotID &&
             m.embeds.length > 0 
         // Find the first message in the channel that matches the filter
         const initialMessage = await (message.channel as TextChannel).awaitMessages({
@@ -69,7 +57,7 @@ export default {
         // Filter for updates to the bot's response
         const filter = (m: Message) => 
             m.id === baseMessage.id &&
-            m.author.id === BOT_ID &&
+            m.author.id === BotID &&
             m.embeds.length > 0 
         client.on('messageUpdate', async (oldMsg, newMsg) => {
 
@@ -81,7 +69,7 @@ export default {
 
             // If the message from the user says push=y, stop listening for updates
             if (messageContent.includes('push=y') && message.author.id === newMsg.author.id) {
-                transparency.edit(handleTextLimit(message, CardPool, args));
+                transparency.edit(handleTextLimit(message, CardPool, args) as MessageEditOptions);
                 clearContent();
                 return;
             }
@@ -99,7 +87,7 @@ export default {
 
             // If the card count is equal to the total, edit the message
             if (isCountEqual(newMsg, CardPool.length)) {
-                transparency.edit(handleTextLimit(message, CardPool, args));
+                transparency.edit(handleTextLimit(message, CardPool, args) as MessageEditOptions);
                 clearContent();
             // If the page is not yet complete, update the embed
             } else {
@@ -118,4 +106,4 @@ export default {
     status: 'ACTIVE',
     extend: false
 
-};
+} as Command;

@@ -1,12 +1,10 @@
-import { AttachmentBuilder, Embed, EmbedBuilder, Message, MessageCreateOptions } from 'discord.js';
 import { CardMetadata, Query } from '../types/GlobalTypes';
+import { AttachmentBuilder, Embed, EmbedBuilder, Message, MessageCreateOptions } from 'discord.js';
 
 //-- (->boolean) Checks if the total card count matches the expected count
 function isCountEqual (message: Message, length: number): boolean {
     return (length === Number(message.embeds[0].description?.match(/has (\d+) cards/)?.[1] || 0));
 }
-
-
 
 //-- (->CardMetadata[]) Returns and removes duplicates from an array of cards
 function getUniqueCards (cards: CardMetadata[]): CardMetadata[] {
@@ -82,8 +80,6 @@ function setEvents (cards: CardMetadata[], events: string[]): string {
     return "";
 }
 
-
-
 //-- (->string) Returns a formatted string based on arguments
 function handleFormatting (cards: CardMetadata[], template: MessageCreateOptions, args?: Query[]): MessageCreateOptions {
 
@@ -123,7 +119,7 @@ function handleFormatting (cards: CardMetadata[], template: MessageCreateOptions
 
 
 //-- (->MessageCreateOptions) Creates a template for the message
-function createTemplate(message: Message, name: string): MessageCreateOptions {
+function createTemplate(message: Message, commandName: string): MessageCreateOptions {
 
     const BOT_HEX = message.guild?.members.me?.displayHexColor;
     const BOT_COLOR = BOT_HEX ? parseInt(BOT_HEX.slice(1), 16) : 0x2F3136;
@@ -131,11 +127,11 @@ function createTemplate(message: Message, name: string): MessageCreateOptions {
     const embed = new EmbedBuilder()
         .setColor(BOT_COLOR)
         .setAuthor({
-            name: `${message.author.username} — ${name}`,
+            name: `${message.author.username} — ${commandName}`,
             iconURL: message.author.displayAvatarURL(),
         })
         .setFooter({
-            text: "Macrothesley",
+            text: message.client.user?.username || "",
             iconURL: message.client.user.displayAvatarURL()
         })
         .setTimestamp(new Date());

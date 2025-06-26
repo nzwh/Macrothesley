@@ -19,6 +19,9 @@ interface Command {
     extend?: boolean;
 }
 
+type EmployeeCompensation = { id: string, count: number, salary: number }
+type EmployeeData = { discordId: string, diligence: number, history: number }
+
 export type {
-    CardMetadata, Query, Command
+    CardMetadata, Query, Command, EmployeeCompensation, EmployeeData
 };
